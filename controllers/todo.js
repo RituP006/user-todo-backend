@@ -4,7 +4,7 @@ const Todo = db.todos;
 const User = db.users;
 
 exports.createTodo = async (req, res, next) => {
-  const { title, description, isComplete, userId } = req.body;
+  const { title, isComplete, userId } = req.body;
 
   try {
     const user = await User.findByPk(userId);
@@ -16,7 +16,6 @@ exports.createTodo = async (req, res, next) => {
 
     const newTodo = await Todo.create({
       title,
-      description,
       isComplete,
       userId,
     });
@@ -31,10 +30,10 @@ exports.createTodo = async (req, res, next) => {
 };
 
 exports.updateTodo = async (req, res, next) => {
-  const todoId = req.params.todoId;
-  const { title, description, isComplete } = req.body;
+  const todoId = req.params.todo;
+  const { title, isComplete, userId } = req.body;
   try {
-    const todo = await Todo.findByPk(todoId);
+    const todo = await Todo.findOne({ where: { id: todoId } });
     if (!todo) {
       return res
         .status(404)
@@ -42,7 +41,6 @@ exports.updateTodo = async (req, res, next) => {
     }
 
     todo.title = title;
-    todo.description = description;
     todo.isComplete = isComplete;
     const updatedTodo = await todo.save();
     res.status(200).json({
@@ -59,7 +57,7 @@ exports.updateTodo = async (req, res, next) => {
 
 exports.deleteTodo = async (req, res, next) => {
   try {
-    const todoId = req.params.todoId;
+    const todoId = req.params.todo;
 
     const todo = await Todo.findByPk(todoId);
     if (!todo) {

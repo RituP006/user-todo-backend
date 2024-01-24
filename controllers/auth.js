@@ -12,18 +12,25 @@ const register = async (req, res) => {
     profileImage: req.body.profileImage,
   };
 
+  console.log(user);
+
   if (!user.firstName || !user.lastName || !user.password || !user.email) {
-    res.status(400);
-    throw new Error("Please Enter all the Feilds");
+    res.status(400).json({
+      status: "error",
+      message: "Please enter all details",
+    });
+    return;
   }
 
   const userExists = await User.findOne({ email: user.email });
 
   if (userExists) {
+    console.log("user already exist");
     res.status(400).json({
       status: "error",
       message: "User already exists",
     });
+    return;
   }
 
   try {
@@ -35,13 +42,16 @@ const register = async (req, res) => {
       password: hashedPassword,
     });
 
+    console.log("User created");
     const { password: _, ...result } = createdUser.dataValues;
 
     res.status(201).json({
       status: "success",
       data: result,
     });
+    return;
   } catch (error) {
+    console.log(error);
     res.status(500).json({
       status: "error",
       message: error.message,
@@ -51,10 +61,11 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   const { email, password } = req.body;
-
+  console.log(email);
   const user = await User.findOne({
     where: { email: email },
   });
+  console.log(user);
 
   if (user) {
     const password_valid = await bcrypt.compare(password, user.password);
