@@ -11,9 +11,6 @@ const register = async (req, res) => {
     password: req.body.password,
     profileImage: req.body.profileImage,
   };
-
-  console.log(user);
-
   if (!user.firstName || !user.lastName || !user.password || !user.email) {
     res.status(400).json({
       status: "error",
@@ -22,22 +19,21 @@ const register = async (req, res) => {
     return;
   }
 
-  const userExists = await User.findOne({
-    where: {
-      email: req.body.email,
-    },
-  });
-
-  if (userExists) {
-    console.log("user already exist");
-    res.status(400).json({
-      status: "error",
-      message: "User already exists",
-    });
-    return;
-  }
-
   try {
+    const userExists = await User.findOne({
+      where: {
+        email: req.body.email,
+      },
+    });
+
+    if (userExists) {
+      console.warn("Error in Registration : User already exist");
+      res.status(400).json({
+        status: "error",
+        message: "User already exists",
+      });
+      return;
+    }
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(req.body.password, salt);
 
@@ -46,7 +42,6 @@ const register = async (req, res) => {
       password: hashedPassword,
     });
 
-    console.log("User created");
     const { password: _, ...result } = createdUser.dataValues;
 
     res.status(201).json({
@@ -55,7 +50,7 @@ const register = async (req, res) => {
     });
     return;
   } catch (error) {
-    console.log(error);
+    console.error("Error in Registration : ", error);
     res.status(500).json({
       status: "error",
       message: error.message,
@@ -65,11 +60,9 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   const { email, password } = req.body;
-  console.log(email);
   const user = await User.findOne({
     where: { email: email },
   });
-  console.log(user);
 
   if (user) {
     const password_valid = await bcrypt.compare(password, user.password);

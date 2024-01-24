@@ -37,7 +37,7 @@ db.sequelize
     console.log("Database synced");
   })
   .catch((err) => {
-    console.log(err);
+    console.log("Error in database sync : ", err);
   });
 
 module.exports = db;
