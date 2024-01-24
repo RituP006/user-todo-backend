@@ -22,7 +22,11 @@ const register = async (req, res) => {
     return;
   }
 
-  const userExists = await User.findOne({ email: user.email });
+  const userExists = await User.findOne({
+    where: {
+      email: req.body.email,
+    },
+  });
 
   if (userExists) {
     console.log("user already exist");
